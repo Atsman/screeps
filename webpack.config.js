@@ -2,7 +2,7 @@ const config = {
   entry: './src/main.js',
   output: {
     path: `${__dirname}/dist`,
-    filename: 'bundle.js',
+    filename: 'main.js',
   },
   module: {
     loaders: [

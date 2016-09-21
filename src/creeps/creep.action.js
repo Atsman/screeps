@@ -15,7 +15,7 @@ export class CreepAction {
     this.creep.moveTo(target);
   }
 
-  needRenew() {
+  needsRenew() {
     return this.creep.ticksToLive < this.minLifeBeforeNeedsRenew;
   }
 
@@ -24,6 +24,7 @@ export class CreepAction {
   }
 
   moveToRenew() {
+    this.creep.say('moveToRenew');
     if (this.tryRenew() === ERR_NOT_IN_RANGE) {
       this.moveTo(this.renewStation);
     }

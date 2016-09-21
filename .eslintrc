@@ -6,8 +6,9 @@
   "globals": {
     "_": true,
     "Game": true,
+    "Memory": true,
     "PathFinder": true,
-    "ERR_NOT_IN_RANGE": true,
+    "ERR_NOT_IN_RANGE": true
   },
   "rules": {
     "import/no-extraneous-dependencies": 0,
