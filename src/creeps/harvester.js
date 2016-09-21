@@ -66,9 +66,7 @@ export class Harvester extends CreepAction {
   }
 
   action() {
-    if (this.needsRenew()) {
-      this.moveToRenew();
-    } else if (this.isBagFull()) {
+    if (this.isBagFull()) {
       this.moveToDropEnergy();
     } else {
       this.moveToHarvest();

@@ -35,9 +35,7 @@ export class Upgrader extends CreepAction {
   }
 
   action() {
-    if (this.needsRenew()) {
-      this.moveToRenew();
-    } else if (this.isBagFull()) {
+    if (this.isBagFull()) {
       this.moveToController();
     } else {
       this.moveToHarvest();

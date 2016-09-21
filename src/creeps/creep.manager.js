@@ -17,7 +17,6 @@ let harvestersCount = 0;
 let buildersCount = 0;
 let upgradersCount = 0;
 
-
 function loadCreeps() {
   creeps = Game.creeps;
   creepNames = _.keys(Game.creeps);
@@ -46,7 +45,7 @@ function createHarvester() {
   const msources = MemoryManager.getMemory().sources;
   const sources = SourceManager.getActiveSources();
 
-  const msource = _.find(msources, source => source.creepsCount < 5);
+  const msource = _.find(msources, source => source.creepsCount < config.MAX_HARVESTERS_PER_SOURCE);
 
   if (msource) {
     const props = {
@@ -138,15 +137,15 @@ function creepsGoToWork() {
 }
 
 function isHarvesterLimitFull() {
-  return config.MAX_HARVESTERS_PER_SOURCE === creepCount;
+  return harvestersCount >= 8;
 }
 
 function isBuilderLimitFull() {
-  return buildersCount > 4;
+  return buildersCount >= 4;
 }
 
 function isUpgradersLimitFull() {
-  return upgradersCount > 2;
+  return upgradersCount >= 2;
 }
 
 export const CreepManager = {
