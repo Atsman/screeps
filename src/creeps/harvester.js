@@ -49,8 +49,8 @@ export class Harvester extends CreepAction {
     }
   }
 
-  tryEnergyDropOff() {
-    return this.creep.transfer(this.targetEnergyDropOff, RESOURCE_ENERGY);
+  tryEnergyDropOff(target) {
+    return this.creep.transfer(target, RESOURCE_ENERGY);
   }
 
   moveToDropEnergy() {
@@ -60,7 +60,7 @@ export class Harvester extends CreepAction {
     } else {
       targetEnergyDropOff = this.targetEnergyDropOff;
     }
-    if (this.tryEnergyDropOff() === ERR_NOT_IN_RANGE) {
+    if (this.tryEnergyDropOff(targetEnergyDropOff) === ERR_NOT_IN_RANGE) {
       this.moveTo(targetEnergyDropOff);
     }
   }

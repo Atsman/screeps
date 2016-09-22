@@ -11,14 +11,16 @@ function loadSources() {
   sourceCount = _.size(sources);
 
   const memory = MemoryManager.getMemory();
-  memory.sources = {};
+  if (!memory.sources) {
+    memory.sources = {};
 
-  _.forEach(sources, (source, id) => {
-    memory.sources[id] = {
-      id,
-      creepsCount: 0,
-    };
-  });
+    _.forEach(sources, (source) => {
+      memory.sources[source.id] = {
+        id: source.id,
+        creepsCount: 0,
+      };
+    });
+  }
 
   if (config.VERBOSE) {
     console.log(`${sourceCount} sources in room.`);

@@ -1,6 +1,6 @@
 const VERBOSE = true;
 
-const MAX_HARVESTERS_PER_SOURCE = 4;
+const MAX_HARVESTERS_PER_SOURCE = 5;
 
 const USE_PATHFINDER = true;
 

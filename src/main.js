@@ -30,6 +30,7 @@ module.exports.loop = () => {
   CreepManager.loadCreeps();
 
   if (!CreepManager.isHarvesterLimitFull()) {
+    console.log('harvesters not enought!');
     CreepManager.createHarvester();
   }
 

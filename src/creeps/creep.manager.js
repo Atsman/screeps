@@ -7,9 +7,9 @@ import { Upgrader } from './upgrader';
 import { SpawnManager } from '../spawns/spawn.manager';
 import { MemoryManager } from '../shared';
 
-import { MOVE, CARRY, WORK, OK } from '../screeps.globals';
+import { MOVE, CARRY, WORK, OK, ERR_BUSY } from '../screeps.globals';
 
-let creeps;
+let creeps = Game.creeps;
 let creepNames;
 let creepCount;
 
@@ -17,10 +17,36 @@ let harvestersCount = 0;
 let buildersCount = 0;
 let upgradersCount = 0;
 
+function getHarvesters() {
+  return _.filter(
+    creeps,
+    creep => creep.memory.role === ROLES.HARVESTER
+  );
+}
+
 function loadCreeps() {
   creeps = Game.creeps;
   creepNames = _.keys(Game.creeps);
   creepCount = creepNames.length;
+
+  const sourceCreepsMap = {};
+
+  const sourceIds = getHarvesters().map(creep => creep.memory.target_source_id);
+
+  const sourceIdMap = _.reduce(sourceIds, (acc, id) => {
+    if (_.isNumber(acc[id])) {
+      acc[id] += 1;
+    } else {
+      acc[id] = 1;
+    }
+    return acc;
+  }, {});
+
+  const msources = MemoryManager.getMemory().sources;
+  _.each(msources, (msource) => {
+    const currentCount = sourceIdMap[msource.id];
+    msources[msource.id].creepsCount = currentCount;
+  });
 
   if (config.VERBOSE) {
     console.log(`${creepCount} creeps found.`);
@@ -55,7 +81,11 @@ function createHarvester() {
       target_source_id: msource.id,
     };
 
-    return createCreep(bodyParts, name, props);
+    const status = createCreep(bodyParts, name, props);
+    if (status === ERR_BUSY) {
+      msources[msource.id].creepsCount += 1;
+    }
+    return status;
   }
 
   return false;
@@ -137,7 +167,7 @@ function creepsGoToWork() {
 }
 
 function isHarvesterLimitFull() {
-  return harvestersCount >= 8;
+  return harvestersCount >= config.MAX_HARVESTERS_PER_SOURCE * SourceManager.getActiveSources().length;
 }
 
 function isBuilderLimitFull() {
@@ -145,7 +175,7 @@ function isBuilderLimitFull() {
 }
 
 function isUpgradersLimitFull() {
-  return upgradersCount >= 2;
+  return upgradersCount >= 1;
 }
 
 export const CreepManager = {
@@ -157,4 +187,5 @@ export const CreepManager = {
   isHarvesterLimitFull,
   isBuilderLimitFull,
   isUpgradersLimitFull,
+  getHarvesters,
 };
