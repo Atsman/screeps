@@ -19,7 +19,7 @@ function getFirstSpawn() {
 }
 
 export const SpawnManager = {
-  loadSpawns,
+  init: loadSpawns,
   getFirstSpawn,
 };
 

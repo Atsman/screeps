@@ -14,6 +14,10 @@ export class Upgrader extends CreepAction {
     return this.creep.carry.energy === this.creep.carryCapacity;
   }
 
+  isBagEmpty() {
+    return this.creep.carry.energy === 0;
+  }
+
   tryHarvest() {
     return this.targetSpawn.transferEnergy(this.creep);
   }
@@ -35,7 +39,15 @@ export class Upgrader extends CreepAction {
   }
 
   action() {
-    if (this.isBagFull()) {
+    if (this.creep.memory.upgrading && this.isBagEmpty()) {
+      this.creep.memory.upgrading = false;
+    }
+
+    if (!this.creep.memory.upgrading && this.isBagFull()) {
+      this.creep.memory.upgrading = true;
+    }
+
+    if (this.creep.memory.upgrading) {
       this.moveToController();
     } else {
       this.moveToHarvest();

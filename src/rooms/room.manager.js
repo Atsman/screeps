@@ -17,6 +17,6 @@ function getFirstRoom() {
 }
 
 export const RoomManager = {
-  loadRooms,
+  init: loadRooms,
   getFirstRoom,
 };

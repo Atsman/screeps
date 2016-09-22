@@ -39,6 +39,10 @@ export class Harvester extends CreepAction {
     return this.creep.carry.energy === this.creep.carryCapacity;
   }
 
+  isBagEmpty() {
+    return this.creep.carry.energy === 0;
+  }
+
   tryHarvest() {
     return this.creep.harvest(this.targetSource);
   }
@@ -66,11 +70,16 @@ export class Harvester extends CreepAction {
   }
 
   action() {
-    if (this.isBagFull()) {
+    if (this.creep.memory.harvesting && this.isBagEmpty()) {
+      this.creep.memory.harvesting = false;
+    }
+    if (!this.creep.memory.harvesting && this.isBagFull()) {
+      this.creep.memory.harvesting = true;
+    }
+    if (this.creep.memory.harvesting) {
       this.moveToDropEnergy();
     } else {
       this.moveToHarvest();
     }
-    return true;
   }
 }

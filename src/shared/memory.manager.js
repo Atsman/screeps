@@ -9,6 +9,6 @@ function getMemory() {
 }
 
 export const MemoryManager = {
-  loadMemory,
+  init: loadMemory,
   getMemory,
 };

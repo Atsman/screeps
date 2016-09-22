@@ -1,15 +1,15 @@
 import config from './config';
 import { MemoryManager } from './shared';
-
+import { creepStore } from './creeps/creep.store';
 import { RoomManager } from './rooms/room.manager';
 import { SpawnManager } from './spawns/spawn.manager';
 import { SourceManager } from './sources/source.manager';
 import { CreepManager } from './creeps/creep.manager';
 
-MemoryManager.loadMemory();
-RoomManager.loadRooms();
-SpawnManager.loadSpawns();
-SourceManager.loadSources();
+MemoryManager.init();
+RoomManager.init();
+SpawnManager.init();
+SourceManager.init();
 
 if (config.USE_PATHFINDER) {
   PathFinder.use(true);
@@ -27,19 +27,25 @@ function clearMemory() {
 module.exports.loop = () => {
   clearMemory();
 
+  creepStore.initialize();
+
   CreepManager.loadCreeps();
 
   if (!CreepManager.isHarvesterLimitFull()) {
     console.log('harvesters not enought!');
     CreepManager.createHarvester();
-  }
+  } else {
+    if (!CreepManager.isBuilderLimitFull()) {
+      CreepManager.createBuilder();
+    }
 
-  if (!CreepManager.isBuilderLimitFull()) {
-    CreepManager.createBuilder();
-  }
+    if (!CreepManager.isUpgradersLimitFull()) {
+      CreepManager.createUpgrader();
+    }
 
-  if (!CreepManager.isUpgradersLimitFull()) {
-    CreepManager.createUpgrader();
+    if (!CreepManager.isRepairersLimitFull()) {
+      CreepManager.createRepairer();
+    }
   }
 
   CreepManager.creepsGoToWork();

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "deploy": "node ./libs/screeps.upload.js"
+    "deploy": "node ./libs/screeps.upload.js",
+    "test": "tape -r babel-register test/**/*.js | tap-spec"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,18 @@
   },
   "homepage": "https://github.com/Atsman/screeps#readme",
   "devDependencies": {
+    "babel-polyfill": "^6.13.0",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-register": "^6.14.0",
     "eslint": "^3.5.0",
     "eslint-config-airbnb": "^11.1.0",
     "eslint-loader": "^1.5.0",
     "eslint-plugin-import": "^1.15.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0",
     "webpack": "^2.1.0-beta"
+  },
+  "dependencies": {
+    "lodash": "^4.16.1"
   }
 }

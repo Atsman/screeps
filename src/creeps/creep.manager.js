@@ -4,52 +4,28 @@ import { SourceManager } from '../sources/source.manager';
 import { Harvester } from './harvester';
 import { Builder } from './builder';
 import { Upgrader } from './upgrader';
+import { Repairer } from './repairer';
 import { SpawnManager } from '../spawns/spawn.manager';
 import { MemoryManager } from '../shared';
+import { creepStore } from './creep.store';
 
 import { MOVE, CARRY, WORK, OK, ERR_BUSY } from '../screeps.globals';
 
-let creeps = Game.creeps;
-let creepNames;
-let creepCount;
-
-let harvestersCount = 0;
-let buildersCount = 0;
-let upgradersCount = 0;
-
-function getHarvesters() {
-  return _.filter(
-    creeps,
-    creep => creep.memory.role === ROLES.HARVESTER
-  );
-}
-
-function loadCreeps() {
-  creeps = Game.creeps;
-  creepNames = _.keys(Game.creeps);
-  creepCount = creepNames.length;
-
-  const sourceCreepsMap = {};
-
-  const sourceIds = getHarvesters().map(creep => creep.memory.target_source_id);
-
-  const sourceIdMap = _.reduce(sourceIds, (acc, id) => {
-    if (_.isNumber(acc[id])) {
-      acc[id] += 1;
+export function calculateHarvestersPerSource(harvesters) {
+  return _.reduce(harvesters, (acc, harvester) => {
+    const sourceId = harvester.memory.target_source_id;
+    if (_.isNumber(acc[sourceId])) {
+      acc[sourceId] += 1;
     } else {
-      acc[id] = 1;
+      acc[sourceId] = 1;
     }
     return acc;
   }, {});
+}
 
-  const msources = MemoryManager.getMemory().sources;
-  _.each(msources, (msource) => {
-    const currentCount = sourceIdMap[msource.id];
-    msources[msource.id].creepsCount = currentCount;
-  });
-
+function loadCreeps() {
   if (config.VERBOSE) {
-    console.log(`${creepCount} creeps found.`);
+    console.log(`${creepStore.getCreepCount()} creeps found.`);
   }
 }
 
@@ -64,35 +40,37 @@ function createCreep(bodyParts, name, props) {
   return status;
 }
 
+function findSourceWithNotEnoughtHarvesters(sources, sourceCreepsCountMap) {
+  return _.find(
+    sources,
+    s => !sourceCreepsCountMap[s.id] || sourceCreepsCountMap[s.id] < config.MAX_HARVESTERS_PER_SOURCE
+  );
+}
+
 function createHarvester() {
-  const bodyParts = [MOVE, MOVE, CARRY, WORK];
+  const bodyParts = [MOVE, CARRY, WORK];
   const name = undefined;
+  const sourceCreepsCountMap = calculateHarvestersPerSource(creepStore.getHarvesters());
+  const source = findSourceWithNotEnoughtHarvesters(SourceManager.getActiveSources(), sourceCreepsCountMap);
 
-  const msources = MemoryManager.getMemory().sources;
-  const sources = SourceManager.getActiveSources();
-
-  const msource = _.find(msources, source => source.creepsCount < config.MAX_HARVESTERS_PER_SOURCE);
-
-  if (msource) {
+  if (source) {
     const props = {
       renew_station_id: SpawnManager.getFirstSpawn().id,
       role: ROLES.HARVESTER,
       target_energy_dropoff_id: SpawnManager.getFirstSpawn().id,
-      target_source_id: msource.id,
+      target_source_id: source.id,
     };
 
-    const status = createCreep(bodyParts, name, props);
-    if (status === ERR_BUSY) {
-      msources[msource.id].creepsCount += 1;
-    }
-    return status;
+    return createCreep(bodyParts, name, props);
   }
+
+  console.log('createHarvester - source not found');
 
   return false;
 }
 
 function createBuilder() {
-  const bodyParts = [MOVE, MOVE, CARRY, WORK];
+  const bodyParts = [MOVE, CARRY, WORK];
   const name = undefined;
   const props = {
     renew_station_id: SpawnManager.getFirstSpawn().id,
@@ -112,12 +90,19 @@ function createUpgrader() {
   return createCreep(bodyParts, name, props);
 }
 
+function createRepairer() {
+  const bodyParts = [MOVE, MOVE, CARRY, WORK];
+  const name = undefined;
+  const props = {
+    renew_station_id: SpawnManager.getFirstSpawn().id,
+    role: ROLES.REPAIRER,
+  };
+  return createCreep(bodyParts, name, props);
+}
+
 function creepsGoToWork() {
-  let hCount = 0;
-  let bCount = 0;
-  let uCount = 0;
-  _.each(creepNames, (creepName) => {
-    const creep = creeps[creepName];
+  _.each(creepStore.getCreepNames(), (creepName) => {
+    const creep = Game.creeps[creepName];
     if (creep.memory.role === ROLES.HARVESTER) {
       if (!creep.memory.renew_station_id) {
         creep.memory = {
@@ -129,7 +114,6 @@ function creepsGoToWork() {
       }
       const harvester = new Harvester(creep);
       harvester.action();
-      hCount += 1;
     }
 
     if (creep.memory.role === ROLES.BUILDER) {
@@ -141,7 +125,6 @@ function creepsGoToWork() {
       }
       const builder = new Builder(creep);
       builder.action();
-      bCount += 1;
     }
 
     if (creep.memory.role === ROLES.UPGRADER) {
@@ -151,31 +134,41 @@ function creepsGoToWork() {
 
       const upgrader = new Upgrader(creep);
       upgrader.action();
-      uCount += 1;
+    }
+
+    if (creep.memory.role === ROLES.REPAIRER) {
+      if (!creep.memory.renew_station_id) {
+        creep.memory.renew_station_id = SpawnManager.getFirstSpawn().id;
+      }
+
+      const repairer = new Repairer(creep);
+      repairer.action();
     }
   });
 
-  harvestersCount = hCount;
-  buildersCount = bCount;
-  upgradersCount = uCount;
-
   if (config.VERBOSE) {
-    console.log(`${harvestersCount} harvesters`);
-    console.log(`${buildersCount} builders`);
-    console.log(`${upgradersCount} upgraders`);
+    console.log(`${creepStore.getHarvesters().length} harvesters`);
+    console.log(`${creepStore.getBuilders().length} builders`);
+    console.log(`${creepStore.getUpgraders().length} upgraders`);
+    console.log(`${creepStore.getRepairers().length} repairers`);
   }
 }
 
 function isHarvesterLimitFull() {
-  return harvestersCount >= config.MAX_HARVESTERS_PER_SOURCE * SourceManager.getActiveSources().length;
+  return creepStore.getHarvesters().length >=
+    config.MAX_HARVESTERS_PER_SOURCE * SourceManager.getActiveSources().length;
 }
 
 function isBuilderLimitFull() {
-  return buildersCount >= 4;
+  return creepStore.getBuilders().length >= 4;
 }
 
 function isUpgradersLimitFull() {
-  return upgradersCount >= 1;
+  return creepStore.getUpgraders().length >= 1;
+}
+
+function isRepairersLimitFull() {
+  return creepStore.getRepairers().length >= 3;
 }
 
 export const CreepManager = {
@@ -187,5 +180,7 @@ export const CreepManager = {
   isHarvesterLimitFull,
   isBuilderLimitFull,
   isUpgradersLimitFull,
-  getHarvesters,
+  getHarvesters: creepStore.getHarvesters.bind(creepStore),
+  isRepairersLimitFull,
+  createRepairer,
 };

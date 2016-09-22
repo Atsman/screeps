@@ -36,7 +36,7 @@ function getFirstSource() {
 }
 
 export const SourceManager = {
-  loadSources,
+  init: loadSources,
   getActiveSources,
   getFirstSource,
 };
