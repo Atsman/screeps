@@ -1,4 +1,5 @@
 import config from '../config';
+import { ERR_NOT_IN_RANGE } from '../screeps.globals';
 
 export class CreepAction {
   constructor(creep) {

@@ -1,7 +1,7 @@
 import { CreepAction } from './creep.action';
 import {
   RESOURCE_ENERGY, STRUCTURE_EXTENSION, STRUCTURE_TOWER,
-  FIND_STRUCTURES,
+  FIND_STRUCTURES, ERR_NOT_IN_RANGE,
 } from '../screeps.globals';
 
 const CHARGING_STRUCTURES = [STRUCTURE_EXTENSION, STRUCTURE_TOWER];

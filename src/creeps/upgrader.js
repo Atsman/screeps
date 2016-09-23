@@ -1,5 +1,6 @@
 import { CreepAction } from './creep.action';
 import { RoomManager } from '../rooms';
+import { ERR_NOT_IN_RANGE } from '../screeps.globals';
 
 export class Upgrader extends CreepAction {
   constructor(creep) {

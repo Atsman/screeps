@@ -11,6 +11,13 @@ import { creepStore } from './creep.store';
 
 import { MOVE, CARRY, WORK, OK, ERR_BUSY } from '../screeps.globals';
 
+const MAX_CREEP_COUNT = {
+  [ROLES.HARVESTER]: s => config.MAX_HARVESTERS_PER_SOURCE * s,
+  [ROLES.BUILDER]: 2,
+  [ROLES.REPAIRER]: 2,
+  [ROLES.UPGRADER]: 1,
+};
+
 export function calculateHarvestersPerSource(harvesters) {
   return _.reduce(harvesters, (acc, harvester) => {
     const sourceId = harvester.memory.target_source_id;
@@ -155,20 +162,19 @@ function creepsGoToWork() {
 }
 
 function isHarvesterLimitFull() {
-  return creepStore.getHarvesters().length >=
-    config.MAX_HARVESTERS_PER_SOURCE * SourceManager.getActiveSources().length;
+  return creepStore.getHarvesters().length >= MAX_CREEP_COUNT[ROLES.HARVESTER](SourceManager.getActiveSources().length);
 }
 
 function isBuilderLimitFull() {
-  return creepStore.getBuilders().length >= 4;
+  return creepStore.getBuilders().length >= MAX_CREEP_COUNT[ROLES.BUILDER];
 }
 
 function isUpgradersLimitFull() {
-  return creepStore.getUpgraders().length >= 1;
+  return creepStore.getUpgraders().length >= MAX_CREEP_COUNT[ROLES.UPGRADER];
 }
 
 function isRepairersLimitFull() {
-  return creepStore.getRepairers().length >= 3;
+  return creepStore.getRepairers().length >= MAX_CREEP_COUNT[ROLES.REPAIRER];
 }
 
 export const CreepManager = {

@@ -1,6 +1,9 @@
 import { CreepAction } from './creep.action';
 import { RoomManager } from '../rooms';
-import { STRUCTURE_WALL, STRUCTURE_RAMPART, FIND_STRUCTURES, FIND_CONSTRUCTION_SITES } from '../screeps.globals';
+import {
+  STRUCTURE_WALL, STRUCTURE_RAMPART, FIND_STRUCTURES,
+  FIND_CONSTRUCTION_SITES, ERR_NOT_IN_RANGE,
+} from '../screeps.globals';
 
 const SECURITY_STRUCTURES = [STRUCTURE_WALL, STRUCTURE_RAMPART];
 
@@ -45,7 +48,7 @@ export class Repairer extends CreepAction {
   moveToHarvest() {
     this.creep.say('moveToHarvest');
     if (this.tryHarvest() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.targetSource);
+      this.moveTo(this.targetSpawn);
     }
   }
 

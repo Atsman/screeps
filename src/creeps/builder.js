@@ -1,6 +1,6 @@
 import { CreepAction } from './creep.action';
 import { RoomManager } from '../rooms';
-import { FIND_CONSTRUCTION_SITES } from '../screeps.globals';
+import { FIND_CONSTRUCTION_SITES, OK, ERR_NOT_IN_RANGE } from '../screeps.globals';
 
 export class Builder extends CreepAction {
   constructor(creep) {
@@ -28,7 +28,7 @@ export class Builder extends CreepAction {
   moveToHarvest() {
     this.creep.say('moveToHarvest');
     if (this.tryHarvest() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.targetSource);
+      this.moveTo(this.targetSpawn);
     }
   }
 
